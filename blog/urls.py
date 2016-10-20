@@ -14,13 +14,26 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf import settings
-from django.conf.urls import patterns, include, url
 from django.conf.urls.static import static
+from django.conf.urls import url, include
 from django.contrib import admin
+from django.contrib.flatpages import views
+from blogpost.views import *
+import django_comments.urls
+import rest_framework.urls
+from rest_framework import routers
+from blogpost.api import BlogpostSet
 
+apiRouter = routers.DefaultRouter()
+apiRouter.register(r'blogpost', BlogpostSet, 'Blogpost')
 
-urlpatterns = patterns('',
-    (r'^$', 'blogpost.views.index'),
-    url(r'^blog/(?P<slug>[^\.]+).html', 'blogpost.views.view_post', name='view_blog_post'),
-    url(r'^admin/', include(admin.site.urls))
-)
+urlpatterns = [
+    url(r'^$', index),
+    url(r'^blog/(?P<slug>[^\.]+).html', view_post, name='view_blog_post'),
+    url(r'^admin/', admin.site.urls),
+    url(r'^pages/(?P<url>.*/)$', views.flatpage),
+    url(r'^comments/', include(django_comments.urls)),
+    url(r'^api-auth/', include(rest_framework.urls, namespace='rest_framework')),
+    url(r'^api/', include(apiRouter.urls)),
+] 
+
